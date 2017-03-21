@@ -13,7 +13,7 @@ import SocketTool.SocketTools;
 
 /**
  * This class is Singleton and Synchronized 
- * @author Max And Guy
+ * @author Max And Guy  
  *
  */
 public class ProcessUnits {
