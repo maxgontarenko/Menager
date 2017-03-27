@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -15,7 +19,7 @@ public class SocketTools {
 	protected Socket sock = null;
 	protected OutputStream OutPut = null;
 	protected InputStream InPut = null;
-	
+	protected LinkedList<String> DataList = null;
 	/**
 	 * SocketTools - Provides tools to explore Socket connection 
 	 * with non block functions
@@ -31,6 +35,7 @@ public class SocketTools {
 			e.printStackTrace();
 			System.exit(0);
 		}
+		this.DataList = new LinkedList<String>();
 	}
 	
 	/***
@@ -48,6 +53,8 @@ public class SocketTools {
 		}
 		if(numberOfByte>0)
 			return true;
+		if(this.DataList.size()>0)
+			return true;
 		return false;
 	}
 	
@@ -59,7 +66,7 @@ public class SocketTools {
 	public Object ReceiveGson(Type type){
 		Gson gsn = new Gson();
 		String msg = this.ReceiveString();
-		SendMessage rtn = gsn.fromJson(msg, new TypeToken<SendMessage>(){}.getType());
+		Object rtn = gsn.fromJson(msg, new TypeToken<SendMessage>(){}.getType());
 		return rtn;
 	}
 	
@@ -88,6 +95,20 @@ public class SocketTools {
 			e.printStackTrace();
 		}
 		rtn = new String(read);	//convert data to String Object
+		String []arr = rtn.split(Pattern.quote("}{"));
+		for(String x : arr){
+			if(x.length()==0)
+				break;
+			/*Convert to Gson Format*/
+			if(x.charAt(0)!='{')
+				x = "{" + x;
+			if(x.charAt(x.length()-1)!='}')
+				x = x + "} ";
+			//System.out.println(x);
+			this.DataList.addLast(x);
+		}
+		rtn = this.DataList.get(0);
+		this.DataList.removeFirst();
 		return rtn;
 	}
 	
